@@ -12,6 +12,7 @@ import com.yandex.ydb.table.Session;
 import com.yandex.ydb.table.TableClient;
 import com.yandex.ydb.table.query.DataQueryResult;
 import com.yandex.ydb.table.result.ResultSetReader;
+import com.yandex.ydb.table.result.ValueReader;
 import com.yandex.ydb.table.rpc.grpc.GrpcTableRpc;
 import com.yandex.ydb.table.transaction.TxControl;
 
@@ -56,7 +57,8 @@ public class App {
 
                 ResultSetReader resultSet = result.getResultSet(0);
                 while (resultSet.next()) {
-                    System.out.println(resultSet.getColumn(0).toString());
+                    ValueReader column = resultSet.getColumn(0);
+                    System.out.println(column.toString());
                 }
             } finally {
                 session.close()
