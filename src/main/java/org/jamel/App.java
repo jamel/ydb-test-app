@@ -41,26 +41,31 @@ public class App {
             .withAuthProvider(authProvider)
             .build();
 
-        TableClient client = TableClient.newClient(GrpcTableRpc.ownTransport(transport))
+        TableClient tableClient = TableClient.newClient(GrpcTableRpc.ownTransport(transport))
             .build();
 
-        Session session = client.createSession()
-            .join()
-            .expect("cannot create session");
-
         try {
-            DataQueryResult result = session.executeDataQuery("select 1;", TxControl.onlineRo())
+            Session session = tableClient.createSession()
                 .join()
-                .expect("cannot execute query");
+                .expect("cannot create session");
 
-            ResultSetReader resultSet = result.getResultSet(0);
-            while (resultSet.next()) {
-                System.out.println(resultSet.getColumn(0).toString());
+            try {
+                DataQueryResult result = session.executeDataQuery("select 1;", TxControl.onlineRo())
+                    .join()
+                    .expect("cannot execute query");
+
+                ResultSetReader resultSet = result.getResultSet(0);
+                while (resultSet.next()) {
+                    System.out.println(resultSet.getColumn(0).toString());
+                }
+            } finally {
+                session.close()
+                    .join()
+                    .expect("cannot close session");
             }
         } finally {
-            session.close()
-                .join()
-                .expect("cannot close session");
+            tableClient.close();
+            authContext.close();
         }
     }
 }
