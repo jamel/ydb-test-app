@@ -51,7 +51,8 @@ public class App {
                 .expect("cannot create session");
 
             try {
-                DataQueryResult result = session.executeDataQuery("select 1;", TxControl.onlineRo())
+                TxControl txControl = TxControl.serializableRw().setCommitTx(true);
+                DataQueryResult result = session.executeDataQuery("select 1;", txControl)
                     .join()
                     .expect("cannot execute query");
 
