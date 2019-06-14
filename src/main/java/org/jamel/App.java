@@ -52,14 +52,14 @@ public class App {
 
             try {
                 TxControl txControl = TxControl.serializableRw().setCommitTx(true);
-                DataQueryResult result = session.executeDataQuery("select 1;", txControl)
+                DataQueryResult result = session.executeDataQuery("select 42;", txControl)
                     .join()
                     .expect("cannot execute query");
 
                 ResultSetReader resultSet = result.getResultSet(0);
                 while (resultSet.next()) {
                     ValueReader column = resultSet.getColumn(0);
-                    System.out.println(column.toString());
+                    System.out.println("result: " + column.toString());
                 }
             } finally {
                 session.close()
