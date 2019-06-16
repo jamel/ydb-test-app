@@ -7,7 +7,6 @@ import com.yandex.ydb.auth.iam.IamAuthContext;
 import com.yandex.ydb.auth.iam.Keys;
 import com.yandex.ydb.core.auth.AuthProvider;
 import com.yandex.ydb.core.grpc.GrpcTransport;
-import com.yandex.ydb.core.grpc.GrpcTransportBuilder;
 import com.yandex.ydb.table.Session;
 import com.yandex.ydb.table.TableClient;
 import com.yandex.ydb.table.query.DataQueryResult;
@@ -38,7 +37,7 @@ public class App {
         AuthProvider authProvider = authContext.authProvider(accountId, keyId, privateKey)
             .join();
 
-        GrpcTransport transport = GrpcTransportBuilder.forEndpoint(endpoint, database)
+        GrpcTransport transport = GrpcTransport.forEndpoint(endpoint, database)
             .withAuthProvider(authProvider)
             .build();
 
