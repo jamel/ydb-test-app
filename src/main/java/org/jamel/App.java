@@ -7,13 +7,7 @@ import com.yandex.ydb.auth.iam.IamAuthContext;
 import com.yandex.ydb.auth.iam.Keys;
 import com.yandex.ydb.core.auth.AuthProvider;
 import com.yandex.ydb.core.grpc.GrpcTransport;
-import com.yandex.ydb.table.Session;
-import com.yandex.ydb.table.TableClient;
-import com.yandex.ydb.table.query.DataQueryResult;
-import com.yandex.ydb.table.result.ResultSetReader;
-import com.yandex.ydb.table.result.ValueReader;
-import com.yandex.ydb.table.rpc.grpc.GrpcTableRpc;
-import com.yandex.ydb.table.transaction.TxControl;
+import com.yandex.ydb.core.rpc.RpcTransport;
 
 
 /**
@@ -37,36 +31,13 @@ public class App {
         AuthProvider authProvider = authContext.authProvider(accountId, keyId, privateKey)
             .join();
 
-        GrpcTransport transport = GrpcTransport.forEndpoint(endpoint, database)
+        RpcTransport transport = GrpcTransport.forEndpoint(endpoint, database)
             .withAuthProvider(authProvider)
             .build();
 
-        TableClient tableClient = TableClient.newClient(GrpcTableRpc.ownTransport(transport))
-            .build();
-
-        try {
-            Session session = tableClient.createSession()
-                .join()
-                .expect("cannot create session");
-
-            try {
-                TxControl txControl = TxControl.serializableRw().setCommitTx(true);
-                DataQueryResult result = session.executeDataQuery("select 42;", txControl)
-                    .join()
-                    .expect("cannot execute query");
-
-                ResultSetReader resultSet = result.getResultSet(0);
-                while (resultSet.next()) {
-                    ValueReader column = resultSet.getColumn(0);
-                    System.out.println("result: " + column.toString());
-                }
-            } finally {
-                session.close()
-                    .join()
-                    .expect("cannot close session");
-            }
+        try (BasicExampleV1 example = new BasicExampleV1(transport, database)) {
+            example.run();
         } finally {
-            tableClient.close();
             authContext.close();
         }
     }
